@@ -8,7 +8,7 @@ Prueba técnica de desarrollo para **Mobilia Software**.
 | | |
 |---|---|
 | **Repositorio back-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-backend |
-| **Repositorio front-end** | _(pendiente)_ |
+| **Repositorio front-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-frontend |
 | **Documentación de la API** | http://localhost:8080/swagger-ui.html (con la aplicación levantada) |
 
 ---
