@@ -99,6 +99,46 @@
 
 	<build>
 		<plugins>
+			<!--
+				Desde JDK 23 javac dejo de ejecutar de forma implicita los
+				procesadores de anotaciones que encuentra en el classpath
+				(JEP _proc:full). Hay que declarar Lombok explicitamente para
+				que el proyecto compile tanto con JDK 21 como con JDK 25.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+
+			<!--
+				Separacion de la piramide de tests:
+				  mvn test    -> solo *Test: unitarios y de capa web. Rapidos y
+				                 sin dependencias externas.
+				  mvn verify  -> ademas *IT: integracion contra un MySQL real en
+				                 Testcontainers. Se omiten solos si no hay Docker.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
