@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: contracts-backend
+
+  # --- Conexion a MySQL -------------------------------------------------
+  # Se leen variables de entorno con un valor por defecto (sintaxis ${VAR:default}).
+  # Asi el evaluador puede sobreescribir la conexion sin tocar el codigo fuente.
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:mobilia_contracts}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${DB_USER:mobilia}
+    password: ${DB_PASSWORD:mobilia}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: mobilia-pool
+      maximum-pool-size: 10
+
+  # --- JPA / Hibernate --------------------------------------------------
+  jpa:
+    # 'validate': Hibernate NO crea ni modifica tablas, solo verifica que las
+    # entidades coincidan con el esquema. El duenno del esquema es Flyway.
+    hibernate:
+      ddl-auto: validate
+    # Desactivado a proposito: evita mantener la sesion de Hibernate abierta
+    # durante el renderizado de la respuesta. Obliga a resolver el fetching
+    # en la capa de servicio y previene LazyInitializationException ocultas.
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 25
+
+  # --- Flyway: migraciones versionadas del esquema ----------------------
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# --- Servidor -----------------------------------------------------------
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# --- Documentacion OpenAPI / Swagger UI ---------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+
+# --- Configuracion propia de la aplicacion ------------------------------
+mobilia:
+  cors:
+    # Origenes permitidos para el front-end (Vite usa 5173 por defecto)
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  search:
+    # Longitud minima del texto de busqueda: evita escaneos completos de tabla
+    min-query-length: 2
+    max-page-size: 100
+
+logging:
+  level:
+    com.mobilia.contracts: ${LOG_LEVEL:INFO}

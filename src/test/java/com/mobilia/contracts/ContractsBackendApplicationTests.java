@@ -1,4 +1,4 @@
-package com.mobilia.contracts_backend;
+package com.mobilia.contracts;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
