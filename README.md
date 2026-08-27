@@ -9,7 +9,7 @@ Prueba técnica de desarrollo para **Mobilia Software**.
 |---|---|
 | **Repositorio back-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-backend |
 | **Repositorio front-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-frontend |
-| **Documentación de la API** | http://localhost:8080/swagger-ui.html (con la aplicación levantada) |
+| **Documentación de la API** | Swagger UI en `/swagger-ui.html` — **es una URL local**: sólo responde con la aplicación en marcha, no es un enlace público |
 | **Bitácora de desarrollo** | [`docs/BITACORA.md`](docs/BITACORA.md) — el paso a paso de cómo se construyó |
 
 ---
@@ -153,11 +153,31 @@ limpio en cualquiera de ellos.
 
 ### Comprobar que funciona
 
+Con la aplicación **ya levantada** (el paso anterior deja la consola ocupada;
+abre otra terminal):
+
 ```bash
 curl "http://localhost:8080/api/v1/contracts/search?q=Gomez"
 ```
 
-O abrir **http://localhost:8080/swagger-ui.html** y probar desde el navegador.
+Debe devolver 4 contratos. También puedes explorar la API desde el navegador en
+**Swagger UI**:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+> Esa dirección **no es un enlace público**: apunta a tu propia máquina y sólo
+> responde mientras la aplicación esté ejecutándose. Si el navegador dice
+> «no se puede acceder a este sitio» o «connection refused», casi siempre
+> significa que el proceso se detuvo. Compruébalo así:
+>
+> ```bash
+> curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v3/api-docs
+> ```
+>
+> `200` = todo bien. `000` = la aplicación no está corriendo: vuelve a lanzar
+> `./mvnw spring-boot:run`.
 
 ---
 
@@ -229,6 +249,22 @@ cambia es el puerto publicado hacia fuera.
 brew services stop mysql      # macOS con Homebrew
 sudo systemctl stop mysql     # Linux con systemd
 ```
+
+### Swagger UI no carga
+
+`http://localhost:8080/swagger-ui.html` es una dirección **local**: sólo existe
+mientras la aplicación esté ejecutándose en tu máquina. No es un enlace que
+funcione desde GitHub ni desde otro equipo.
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v3/api-docs
+```
+
+- `200` → la documentación está disponible; abre la URL en el navegador.
+- `000` → la aplicación no está corriendo. Lánzala con `./mvnw spring-boot:run`.
+
+La ruta `/swagger-ui.html` responde con una redirección **302** hacia
+`/swagger-ui/index.html`. Es el comportamiento normal de springdoc, no un error.
 
 ### `Schema-validation: missing table` al arrancar
 
