@@ -342,8 +342,26 @@ con `ON DELETE CASCADE` sobre la columna base de una columna generada `STORED`
 
 Las cardinalidades **mínimas** — «al menos 1 propietario», «al menos 1
 arrendatario» — no son expresables con restricciones declarativas en ningún
-motor relacional: el contrato tendría que nacer con sus partes en el mismo
-instante. Se validan en la capa de servicio.
+motor relacional. La razón es de orden: al insertar el contrato todavía no
+existe ninguna parte que apunte a él, de modo que cualquier comprobación en ese
+instante fallaría siempre.
+
+Un **máximo** sí se expresa —basta con impedir la segunda fila—, y por eso
+«máximo 1 contrato activo» y «máximo 1 arrendatario» sí viven en el esquema.
+
+Dos alternativas consideradas y descartadas:
+
+| Alternativa | Por qué no |
+|---|---|
+| Disparadores `BEFORE DELETE` sobre `contract_party` | Cubren el borrado de la última parte, pero no la inserción. Añaden lógica invisible desde Java, y MySQL no los activa en los borrados en cascada de una clave foránea, lo que produce un comportamiento difícil de anticipar |
+| Validación en la capa de servicio | Es la solución correcta, pero requiere una ruta de escritura. Esta API es de sólo lectura, así que hoy no hay dónde colocarla |
+
+Mientras no exista esa ruta de escritura, la garantía es
+[`ContractInvariantsIT`](src/test/java/com/mobilia/contracts/repository/ContractInvariantsIT.java):
+comprueba en cada `mvn verify`, sobre la totalidad de los datos, que todo
+contrato tiene exactamente un arrendatario, al menos un propietario y al menos
+dos personas distintas. No impide que un dato inválido entre, pero impide que
+pase desapercibido.
 
 ### Datos de ejemplo
 
@@ -424,6 +442,7 @@ curl "http://localhost:8080/api/v1/contracts/search?q=Gomez&page=0&size=20"
 | Capa web | `ContractControllerTest` | Códigos HTTP, forma del JSON y respuestas de error |
 | Integración | `ContractRepositoryIT` | La búsqueda sobre un MySQL real: todos los campos, tildes, paginación y **ausencia de N+1** |
 | Integración | `SchemaConstraintsIT` | Que la **base de datos** rechaza los estados inválidos, no sólo el código Java |
+| Integración | `ContractInvariantsIT` | Las cardinalidades **mínimas** del enunciado, que ninguna restricción declarativa puede expresar |
 | Integración | `ContractsBackendApplicationTests` | Que Flyway migra y que Hibernate valida las entidades contra el esquema |
 
 Los tests de integración levantan **MySQL 8.4 en un contenedor efímero**
