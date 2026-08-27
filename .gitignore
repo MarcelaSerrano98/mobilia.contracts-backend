@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Skills de terceros instaladas con `npx skills add` ###
+# Se pueden restaurar en cualquier momento con ese mismo comando, asi que no
+# tiene sentido versionar una copia. Lo que si se versiona es la configuracion
+# propia: .claude/settings.json y .claude/hooks/.
+.agents/
+skills-lock.json
+.claude/skills/git-guardrails-claude-code

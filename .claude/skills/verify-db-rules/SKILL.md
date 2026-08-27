@@ -144,8 +144,19 @@ Marca como incumplimiento:
   `nullable = false`.
 
 ```bash
-grep -rn "@Enumerated\|@ManyToOne\|@OneToMany" src/main/java/com/mobilia/contracts/domain/
+# El filtro final descarta las lineas de Javadoc. Sin el, un comentario que
+# mencione "@ManyToOne ... EAGER" para explicar por que se declara LAZY se
+# reporta como si fuese la anotacion incumpliendo la regla.
+grep -rn "@Enumerated\|@ManyToOne\|@OneToMany" src/main/java/com/mobilia/contracts/domain/ \
+  | grep -v "^\S*:[0-9]*:\s*\*"
 ```
+
+> **Nunca reportes un incumplimiento basandote solo en la salida de `grep`.**
+> Abre el archivo con `Read` y confirma que la linea es codigo y no un
+> comentario, y que la anotacion aplica al campo que crees. Este proyecto
+> documenta en Javadoc los valores por defecto que evita a proposito
+> (`EAGER`, `ORDINAL`), asi que esos terminos aparecen en el texto sin estar
+> en el codigo.
 
 Comprueba además que `application.yml` mantenga
 `spring.jpa.hibernate.ddl-auto: validate`. Con `update` o `create`, Hibernate

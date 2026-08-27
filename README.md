@@ -95,14 +95,18 @@ Listo. La API queda en `http://localhost:8080`.
 
 > **¿El paso 2 falla con `address already in use`?** Es que ya tienes un MySQL
 > instalado ocupando el puerto 3306. No hace falta desinstalarlo ni detenerlo:
-> publica el contenedor en otro puerto e indícaselo a la aplicación.
+> exporta `DB_PORT` una sola vez y repite los dos pasos.
 >
 > ```bash
-> MYSQL_HOST_PORT=3307 docker compose up -d
-> DB_PORT=3307 ./mvnw spring-boot:run
+> export DB_PORT=3307
+> docker compose up -d
+> ./mvnw spring-boot:run
 > ```
 >
-> Más detalle en [Resolución de problemas](#resolución-de-problemas).
+> `DB_PORT` configura **a la vez** el puerto en el que Docker publica MySQL y el
+> puerto al que se conecta la aplicación, de modo que no pueden quedar
+> desincronizados. Más detalle en
+> [Resolución de problemas](#resolución-de-problemas).
 
 > **No hay que ejecutar ningún script SQL a mano.** Flyway crea el esquema y
 > carga los datos de ejemplo automáticamente en el primer arranque. El estado de
@@ -164,14 +168,13 @@ sobrescritura por variable de entorno, sin tocar el código:
 | Variable | Valor por defecto | Descripción |
 |---|---|---|
 | `DB_HOST` | `localhost` | Host de MySQL |
-| `DB_PORT` | `3306` | Puerto de MySQL |
+| `DB_PORT` | `3306` | Puerto de MySQL. Lo leen **tanto** `docker compose` (puerto en el que publica el contenedor) **como** la aplicación (puerto al que se conecta) |
 | `DB_NAME` | `mobilia_contracts` | Nombre de la base de datos |
 | `DB_USER` | `mobilia` | Usuario |
 | `DB_PASSWORD` | `mobilia` | Contraseña |
 | `SERVER_PORT` | `8080` | Puerto de la aplicación |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Orígenes autorizados del front-end |
 | `LOG_LEVEL` | `INFO` | Nivel de log de la aplicación |
-| `MYSQL_HOST_PORT` | `3306` | Puerto del **host** en el que Docker Compose publica MySQL. Sólo afecta a `docker compose`, no a la aplicación |
 
 ---
 
@@ -203,12 +206,21 @@ Hay tres salidas, en orden de menos a más invasiva:
 **2. Publicar el contenedor en otro puerto** — conviven sin tocarse:
 
 ```bash
-MYSQL_HOST_PORT=3307 docker compose up -d
-DB_PORT=3307 ./mvnw spring-boot:run
+export DB_PORT=3307
+docker compose up -d
+./mvnw spring-boot:run
 ```
 
-`MYSQL_HOST_PORT` cambia sólo el puerto del **host**; dentro del contenedor
-MySQL sigue en el 3306. `DB_PORT` le dice a la aplicación a dónde conectarse.
+Una sola variable configura los dos lados: el puerto del **host** en el que
+Docker publica el contenedor, y el puerto al que se conecta la aplicación.
+Dentro del contenedor MySQL sigue escuchando en el 3306 siempre; lo único que
+cambia es el puerto publicado hacia fuera.
+
+> Con dos variables separadas —una para Docker y otra para la aplicación— era
+> posible publicar el contenedor en un puerto y conectar la aplicación a otro.
+> En una máquina con MySQL instalado el fallo ni siquiera saltaba: la
+> aplicación acababa hablando con la base local en el 3306 en lugar de con el
+> contenedor, sin ningún aviso. Reutilizar `DB_PORT` hace ese error imposible.
 
 **3. Detener el MySQL local** — sólo si prefieres no tener dos:
 
