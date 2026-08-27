@@ -17,13 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Caso de uso unico de la aplicacion: buscar contratos por un texto libre.
- *
- * <p>El enunciado pide localizar el texto en los nombres, apellidos, documento
- * de identidad o email de cualquier persona del contrato, en la direccion del
- * inmueble o en el codigo del contrato, y devolver el contrato completo.</p>
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -47,8 +40,8 @@ public class ContractSearchService {
         String query = normalize(rawQuery);
         Pageable pageable = buildPageable(page, size);
 
-        // Paso 1: que contratos coinciden. Se pagina sobre identificadores,
-        // que es lo unico que puede paginarse sin distorsionar el conteo.
+        // Se pagina sobre identificadores porque es lo unico que puede
+        // paginarse sin que el conteo se descuadre.
         Page<Long> matchingIds = contractRepository.findMatchingIds(toLikePattern(query), pageable);
         log.debug("Busqueda '{}': {} contratos coincidentes", query, matchingIds.getTotalElements());
 
@@ -56,9 +49,8 @@ public class ContractSearchService {
             return PagedResponse.of(List.of(), matchingIds);
         }
 
-        // Paso 2: cargar esos contratos con inmueble, partes y personas en una
-        // sola consulta. Sin este paso, cada contrato provocaria consultas
-        // adicionales al recorrer sus partes (problema N+1).
+        // Sin esta segunda consulta, recorrer las partes de cada contrato
+        // dispararia una consulta por contrato (N+1).
         List<Contract> contracts = contractRepository.findAllWithPartiesByIdIn(matchingIds.getContent());
 
         List<ContractSearchResponse> rows = contracts.stream()
@@ -68,11 +60,6 @@ public class ContractSearchService {
         return PagedResponse.of(rows, matchingIds);
     }
 
-    /**
-     * Valida y limpia el texto recibido.
-     *
-     * @throws InvalidSearchQueryException si no alcanza la longitud minima
-     */
     private String normalize(String rawQuery) {
         String query = rawQuery == null ? "" : rawQuery.trim();
         int minLength = properties.search().minQueryLength();
@@ -85,12 +72,8 @@ public class ContractSearchService {
     }
 
     /**
-     * Construye la peticion de pagina aplicando el tope configurado.
-     *
-     * <p>La pagina se solicita <em>sin</em> ordenacion: el orden lo fija la
-     * clausula {@code ORDER BY} de la propia consulta. Si se anadiera aqui,
-     * Spring Data concatenaria un segundo {@code ORDER BY} y la consulta
-     * dejaria de ser valida.</p>
+     * Sin ordenacion a proposito: la fija el {@code ORDER BY} de la consulta, y
+     * anadirla aqui haria que Spring Data concatenara un segundo ORDER BY.
      */
     private Pageable buildPageable(int page, int size) {
         int safePage = Math.max(page, 0);
@@ -99,13 +82,9 @@ public class ContractSearchService {
     }
 
     /**
-     * Envuelve el texto en comodines, escapando antes los que el propio texto
-     * pudiera contener.
-     *
-     * <p>Sin escapar, teclear {@code %} devolveria todos los contratos y
-     * {@code _} actuaria como comodin de un unico caracter. Nada de esto es un
-     * riesgo de inyeccion SQL (el valor viaja como parametro enlazado), pero si
-     * un resultado que sorprende a quien busca.</p>
+     * Escapa los comodines que traiga el texto: sin ello, teclear {@code %}
+     * devolveria todos los contratos. No es inyeccion SQL —el valor viaja como
+     * parametro enlazado— sino un resultado que sorprende a quien busca.
      */
     private String toLikePattern(String query) {
         String escapeCharacter = ContractRepository.LIKE_ESCAPE_CHARACTER;

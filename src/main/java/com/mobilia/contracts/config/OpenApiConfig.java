@@ -8,12 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Metadatos de la documentacion OpenAPI.
- *
- * <p>springdoc genera la especificacion a partir de los controladores; aqui solo
- * se completa la portada. La interfaz queda publicada en
- * {@code /swagger-ui.html} y sirve para probar la API sin necesidad de tener el
- * front-end levantado.</p>
+ * springdoc genera la especificacion desde los controladores; aqui solo se
+ * completa la portada que muestra Swagger UI en {@code /swagger-ui.html}.
  */
 @Configuration
 public class OpenApiConfig {

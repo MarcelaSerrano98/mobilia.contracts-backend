@@ -24,14 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Punto de entrada HTTP para la consulta de contratos.
- *
- * <p>La ruta incluye la version ({@code /api/v1}) para poder publicar en el
- * futuro un formato de respuesta distinto sin romper a los clientes que ya
- * consumen el actual.</p>
- *
- * <p>El controlador no contiene logica de negocio: valida la entrada, delega en
- * {@link ContractSearchService} y traduce el resultado a una respuesta HTTP.</p>
+ * La ruta lleva version ({@code /api/v1}) para poder publicar mas adelante otro
+ * formato de respuesta sin romper a los clientes que ya consumen el actual.
  */
 @RestController
 @RequestMapping(value = "/api/v1/contracts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,12 +40,15 @@ public class ContractController {
     private final ContractSearchService contractSearchService;
 
     /**
-     * Busca contratos que contengan el texto recibido en cualquiera de los
-     * campos definidos por el enunciado.
+     * Busca contratos que contengan el texto en el codigo del contrato, la
+     * direccion del inmueble o los datos de cualquiera de sus partes.
      *
-     * @param query texto libre a buscar
+     * @param query texto libre; minimo dos caracteres
      * @param page  indice de pagina, empezando en 0
-     * @param size  numero de resultados por pagina
+     * @param size  resultados por pagina, entre 1 y 100
+     * @return 200 con la pagina de resultados, vacia si no hay coincidencias
+     * @throws com.mobilia.contracts.exception.InvalidSearchQueryException
+     *         si el texto es nulo o mas corto que el minimo; se traduce a 400
      */
     @Operation(
             summary = "Buscar contratos por texto libre",

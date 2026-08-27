@@ -17,13 +17,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Participacion de una persona en un contrato con un rol concreto.
- *
- * <p>Resuelve la relacion muchos-a-muchos entre {@link Contract} y
- * {@link Person} cualificandola con un atributo, el {@link PartyRole}. Modelar
- * los roles como columnas de {@code contract} (propietario_1, propietario_2...)
- * seria un grupo repetitivo: incumple la Primera Forma Normal y limita de forma
- * artificial el numero de propietarios y deudores solidarios.</p>
+ * Tabla de union con atributo. Poner los roles como columnas de {@code contract}
+ * ({@code propietario_1}, {@code propietario_2}...) seria un grupo repetitivo:
+ * viola la 1FN y limitaria de forma artificial el numero de partes.
  */
 @Entity
 @Table(

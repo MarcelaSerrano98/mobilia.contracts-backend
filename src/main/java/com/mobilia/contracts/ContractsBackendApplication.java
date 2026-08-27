@@ -6,11 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
- * Punto de arranque de la aplicacion.
- *
- * <p>{@code @EnableConfigurationProperties} registra {@link MobiliaProperties}
- * como bean; sin esta anotacion el {@code record} anotado con
- * {@code @ConfigurationProperties} no se instanciaria.</p>
+ * Sin {@code @EnableConfigurationProperties}, el {@code record} anotado con
+ * {@code @ConfigurationProperties} no llegaria a instanciarse como bean.
  */
 @SpringBootApplication
 @EnableConfigurationProperties(MobiliaProperties.class)

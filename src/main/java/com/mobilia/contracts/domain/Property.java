@@ -14,11 +14,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Inmueble objeto del arrendamiento.
- *
- * <p>No se mapea la coleccion inversa de contratos: la aplicacion nunca navega
- * de inmueble a contratos, solo en sentido contrario. Mapear unicamente las
- * relaciones que se recorren evita cargas perezosas accidentales.</p>
+ * Sin coleccion inversa de contratos a proposito: nadie navega de inmueble a
+ * contratos, y mapear solo lo que se recorre evita cargas perezosas accidentales.
  */
 @Entity
 @Table(name = "property")
@@ -29,16 +26,13 @@ import java.time.LocalDateTime;
 @Builder
 public class Property extends BaseEntity {
 
-    /** Direccion del inmueble. Es uno de los campos sobre los que se busca. */
     @Column(name = "address", nullable = false, length = 255)
     private String address;
 
     /**
-     * Tipo de inmueble.
-     *
-     * <p>{@link EnumType#STRING} y nunca {@code ORDINAL}: con {@code ORDINAL}
-     * se persiste la posicion de la constante, de modo que reordenar o insertar
-     * un valor en el enum corrompe en silencio los datos ya almacenados.</p>
+     * {@code STRING} y nunca {@code ORDINAL} (que es el valor por defecto):
+     * {@code ORDINAL} guarda la posicion, asi que reordenar el enum corrompe
+     * en silencio los datos existentes.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)

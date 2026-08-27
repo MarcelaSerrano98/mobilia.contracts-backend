@@ -1,13 +1,8 @@
 package com.mobilia.contracts.exception;
 
 /**
- * El texto de busqueda recibido no cumple las condiciones minimas para
- * ejecutar la consulta.
- *
- * <p>Se declara como excepcion no comprobada ({@link RuntimeException}) porque
- * representa un error del cliente que el codigo llamante no puede reparar; la
- * traduce a una respuesta HTTP 400 el
- * {@link com.mobilia.contracts.exception.GlobalExceptionHandler}.</p>
+ * No comprobada porque es un error del cliente que quien llama no puede
+ * reparar. {@code GlobalExceptionHandler} la traduce a un HTTP 400.
  */
 public class InvalidSearchQueryException extends RuntimeException {
 

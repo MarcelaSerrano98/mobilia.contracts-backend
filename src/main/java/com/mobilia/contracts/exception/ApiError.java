@@ -6,10 +6,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * Cuerpo uniforme de toda respuesta de error de la API.
- *
- * <p>Un formato unico permite al front-end tratar los errores en un solo lugar
- * en vez de interpretar una estructura distinta segun el fallo.</p>
+ * Formato unico para todos los errores, de modo que el front-end los trate en
+ * un solo sitio en lugar de interpretar una estructura distinta por cada fallo.
  */
 @Schema(description = "Respuesta de error de la API")
 public record ApiError(

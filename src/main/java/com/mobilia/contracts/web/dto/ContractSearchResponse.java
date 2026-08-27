@@ -7,13 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
- * Fila de la tabla de resultados de la busqueda.
- *
- * <p>Se devuelve un DTO y no la entidad {@link com.mobilia.contracts.domain.Contract}
- * por tres motivos: no se filtra al cliente el modelo interno ni columnas de
- * auditoria; se evita que Jackson recorra asociaciones perezosas fuera de la
- * transaccion; y el contrato de la API queda desacoplado del esquema, de modo
- * que renombrar una columna no rompe al consumidor.</p>
+ * DTO y no la entidad: evita filtrar el modelo interno, impide que Jackson
+ * recorra asociaciones perezosas fuera de la transaccion, y desacopla el
+ * contrato de la API del esquema de la base de datos.
  */
 @Schema(description = "Contrato encontrado, con sus partes agrupadas por rol")
 public record ContractSearchResponse(

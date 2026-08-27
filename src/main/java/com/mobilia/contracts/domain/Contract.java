@@ -21,13 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contrato de arrendamiento sobre un inmueble.
- *
- * <p>Las columnas generadas del esquema ({@code active_property_id}) no se
- * mapean: las calcula MySQL y solo existen para sostener el indice unico que
- * impide dos contratos activos sobre el mismo inmueble. La validacion de
- * esquema de Hibernate comprueba que las columnas mapeadas existan, no que se
- * mapeen todas las columnas de la tabla.</p>
+ * La columna generada {@code active_property_id} no se mapea a proposito: la
+ * calcula MySQL para sostener el indice que impide dos contratos activos sobre
+ * el mismo inmueble, y {@code ddl-auto: validate} no exige mapearlo todo.
  */
 @Entity
 @Table(name = "contract")
@@ -38,7 +34,6 @@ import java.util.List;
 @Builder
 public class Contract extends BaseEntity {
 
-    /** Codigo alfanumerico del contrato. Es uno de los campos de busqueda. */
     @Column(name = "code", nullable = false, length = 30, unique = true)
     private String code;
 
@@ -46,13 +41,7 @@ public class Contract extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private ContractStatus status;
 
-    /**
-     * Inmueble al que pertenece el contrato.
-     *
-     * <p>{@link FetchType#LAZY} de forma explicita: el valor por defecto de
-     * {@code @ManyToOne} es {@code EAGER}, que dispara un JOIN adicional en
-     * cada consulta aunque la direccion no se necesite.</p>
-     */
+    /** {@code LAZY} explicito: el defecto de {@code @ManyToOne} es {@code EAGER}. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "property_id",
@@ -62,11 +51,8 @@ public class Contract extends BaseEntity {
     private Property property;
 
     /**
-     * Partes del contrato: arrendatario, propietarios y deudores solidarios.
-     *
-     * <p>{@code orphanRemoval = true} hace que retirar una parte de la lista
-     * la elimine tambien de la base de datos, reflejando que una parte no tiene
-     * existencia propia fuera de su contrato.</p>
+     * {@code orphanRemoval}: una parte no existe fuera de su contrato, asi que
+     * sacarla de la lista debe borrarla tambien de la base de datos.
      */
     @OneToMany(
             mappedBy = "contract",
@@ -81,19 +67,14 @@ public class Contract extends BaseEntity {
     private LocalDateTime updatedAt;
 
     /**
-     * Anade una parte manteniendo sincronizados los dos extremos de la
-     * relacion bidireccional.
-     *
-     * <p>Sin este metodo es facil asignar solo un lado y que el cambio no se
-     * persista, porque el lado propietario de la relacion es
-     * {@link ContractParty#getContract()}, no esta coleccion.</p>
+     * El lado propietario de la relacion es {@code ContractParty.contract}, no
+     * esta lista: anadir solo a la lista no persistiria nada.
      */
     public void addParty(ContractParty party) {
         parties.add(party);
         party.setContract(this);
     }
 
-    /** Devuelve las partes que ejercen el rol indicado, en el orden cargado. */
     public List<ContractParty> getPartiesByRole(PartyRole role) {
         return parties.stream()
                 .filter(party -> party.getRole() == role)

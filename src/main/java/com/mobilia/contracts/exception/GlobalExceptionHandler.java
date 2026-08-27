@@ -13,18 +13,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.List;
 
 /**
- * Traduce cualquier excepcion que escape de los controladores a una respuesta
- * JSON con el formato de {@link ApiError}.
- *
- * <p>Centralizar el tratamiento de errores mantiene los controladores libres de
- * bloques {@code try/catch} y garantiza que el front-end reciba siempre la misma
- * estructura, sea cual sea el fallo.</p>
+ * Centralizar los errores aqui deja los controladores sin {@code try/catch} y
+ * garantiza que el front-end reciba siempre la misma estructura.
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** Texto de busqueda ausente o mas corto que el minimo configurado. */
     @ExceptionHandler(InvalidSearchQueryException.class)
     public ResponseEntity<ApiError> handleInvalidSearchQuery(
             InvalidSearchQueryException exception, HttpServletRequest request) {
@@ -32,7 +27,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, exception.getMessage(), request, List.of());
     }
 
-    /** Falta un parametro obligatorio en la peticion, por ejemplo {@code q}. */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiError> handleMissingParameter(
             MissingServletRequestParameterException exception, HttpServletRequest request) {
@@ -41,7 +35,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message, request, List.of());
     }
 
-    /** Un parametro incumple las restricciones declaradas en el controlador. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> handleConstraintViolation(
             ConstraintViolationException exception, HttpServletRequest request) {
@@ -53,7 +46,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Parametros de busqueda invalidos.", request, details);
     }
 
-    /** El valor recibido no puede convertirse al tipo esperado, p. ej. page=abc. */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(
             MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
@@ -64,10 +56,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Red de seguridad para cualquier fallo no previsto.
-     *
-     * <p>Se registra la traza completa en el log pero no se devuelve al cliente:
-     * exponerla filtraria detalles internos de la aplicacion.</p>
+     * La traza va al log pero nunca al cliente: exponerla filtraria detalles
+     * internos de la aplicacion.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception exception, HttpServletRequest request) {

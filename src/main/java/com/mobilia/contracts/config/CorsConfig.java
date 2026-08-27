@@ -6,15 +6,9 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Habilita CORS para el front-end, que se sirve desde un origen distinto.
- *
- * <p>El navegador bloquea por defecto las peticiones entre origenes distintos
- * (misma politica de origen). Como el front-end corre en el puerto 5173 de Vite
- * y la API en el 8080, se trata de dos origenes diferentes y sin esta
- * configuracion la peticion nunca llegaria al servicio.</p>
- *
- * <p>Los origenes se leen de la configuracion en lugar de escribirse en el
- * codigo: en produccion no deben ser los mismos que en local.</p>
+ * El front (puerto 5173) y la API (8080) son origenes distintos, asi que sin
+ * esto el navegador bloquea la respuesta. Los origenes se leen de la
+ * configuracion porque en produccion no son los mismos que en local.
  */
 @Configuration
 @RequiredArgsConstructor
