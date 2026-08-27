@@ -10,7 +10,6 @@ Prueba técnica de desarrollo para **Mobilia Software**.
 | **Repositorio back-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-backend |
 | **Repositorio front-end** | https://github.com/MarcelaSerrano98/mobilia.contracts-frontend |
 | **Documentación de la API** | Swagger UI en `/swagger-ui.html` — **es una URL local**: sólo responde con la aplicación en marcha, no es un enlace público |
-| **Bitácora de desarrollo** | [`docs/BITACORA.md`](docs/BITACORA.md) — el paso a paso de cómo se construyó |
 
 ---
 

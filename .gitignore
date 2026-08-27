@@ -39,3 +39,7 @@ build/
 .agents/
 skills-lock.json
 .claude/skills/git-guardrails-claude-code
+
+### macOS ###
+.DS_Store
+**/.DS_Store
