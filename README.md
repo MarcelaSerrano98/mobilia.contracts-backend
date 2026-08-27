@@ -20,11 +20,12 @@ Prueba técnica de desarrollo para **Mobilia Software**.
 3. [Requisitos previos](#requisitos-previos)
 4. [Cómo ejecutarlo](#cómo-ejecutarlo)
 5. [Configuración](#configuración)
-6. [Modelo de datos](#modelo-de-datos)
-7. [La API](#la-api)
-8. [Tests](#tests)
-9. [Decisiones técnicas](#decisiones-técnicas)
-10. [Estructura del proyecto](#estructura-del-proyecto)
+6. [Resolución de problemas](#resolución-de-problemas)
+7. [Modelo de datos](#modelo-de-datos)
+8. [La API](#la-api)
+9. [Tests](#tests)
+10. [Decisiones técnicas](#decisiones-técnicas)
+11. [Estructura del proyecto](#estructura-del-proyecto)
 
 ---
 
@@ -91,6 +92,17 @@ docker compose up -d
 ```
 
 Listo. La API queda en `http://localhost:8080`.
+
+> **¿El paso 2 falla con `address already in use`?** Es que ya tienes un MySQL
+> instalado ocupando el puerto 3306. No hace falta desinstalarlo ni detenerlo:
+> publica el contenedor en otro puerto e indícaselo a la aplicación.
+>
+> ```bash
+> MYSQL_HOST_PORT=3307 docker compose up -d
+> DB_PORT=3307 ./mvnw spring-boot:run
+> ```
+>
+> Más detalle en [Resolución de problemas](#resolución-de-problemas).
 
 > **No hay que ejecutar ningún script SQL a mano.** Flyway crea el esquema y
 > carga los datos de ejemplo automáticamente en el primer arranque. El estado de
@@ -159,6 +171,79 @@ sobrescritura por variable de entorno, sin tocar el código:
 | `SERVER_PORT` | `8080` | Puerto de la aplicación |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Orígenes autorizados del front-end |
 | `LOG_LEVEL` | `INFO` | Nivel de log de la aplicación |
+| `MYSQL_HOST_PORT` | `3306` | Puerto del **host** en el que Docker Compose publica MySQL. Sólo afecta a `docker compose`, no a la aplicación |
+
+---
+
+## Resolución de problemas
+
+### `bind: address already in use` al levantar Docker
+
+```
+Error response from daemon: ports are not available: exposing port TCP
+0.0.0.0:3306 -> 127.0.0.1:0: listen tcp 0.0.0.0:3306: bind: address already in use
+```
+
+Significa que **ya hay un MySQL escuchando en el puerto 3306** de tu máquina,
+normalmente uno instalado con Homebrew, `apt` o el instalador oficial. Dos
+procesos no pueden ocupar el mismo puerto, así que Docker no puede publicar el
+suyo.
+
+Comprobar quién lo tiene ocupado:
+
+```bash
+lsof -nP -iTCP:3306 -sTCP:LISTEN     # macOS y Linux
+```
+
+Hay tres salidas, en orden de menos a más invasiva:
+
+**1. Usar el MySQL que ya tienes** — no necesitas Docker en absoluto. Sigue la
+[Opción B](#opción-b--con-un-mysql-ya-instalado).
+
+**2. Publicar el contenedor en otro puerto** — conviven sin tocarse:
+
+```bash
+MYSQL_HOST_PORT=3307 docker compose up -d
+DB_PORT=3307 ./mvnw spring-boot:run
+```
+
+`MYSQL_HOST_PORT` cambia sólo el puerto del **host**; dentro del contenedor
+MySQL sigue en el 3306. `DB_PORT` le dice a la aplicación a dónde conectarse.
+
+**3. Detener el MySQL local** — sólo si prefieres no tener dos:
+
+```bash
+brew services stop mysql      # macOS con Homebrew
+sudo systemctl stop mysql     # Linux con systemd
+```
+
+### `Schema-validation: missing table` al arrancar
+
+Hibernate arranca con `ddl-auto: validate`, es decir, **no crea ni modifica
+tablas**: sólo comprueba que las entidades coincidan con el esquema. Si aparece
+este error, es que Flyway no llegó a ejecutarse — casi siempre porque la
+aplicación se conectó a una base de datos distinta de la que esperabas.
+Verifica `DB_NAME`, `DB_HOST` y `DB_PORT`.
+
+### La búsqueda no encuentra nombres con tilde
+
+La insensibilidad a mayúsculas y tildes la aporta la colación
+`utf8mb4_0900_ai_ci`. Si creaste la base a mano sin declararla, MySQL habrá
+usado la colación por defecto del servidor. Comprobarlo:
+
+```sql
+SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA
+WHERE SCHEMA_NAME = 'mobilia_contracts';
+```
+
+Las tablas la declaran de forma explícita en la migración `V1`, así que basta
+con borrar la base y dejar que Flyway la recree.
+
+### Los tests de integración no se ejecutan
+
+Es el comportamiento esperado si no hay Docker: se **omiten** en lugar de
+fallar, gracias a `@Testcontainers(disabledWithoutDocker = true)`. Con Docker
+levantado, `./mvnw verify` los ejecuta.
 
 ---
 
